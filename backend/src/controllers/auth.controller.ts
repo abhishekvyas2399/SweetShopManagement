@@ -3,6 +3,8 @@ import { registerUserService } from "../service/auth.service";
 import prisma from "../prisma";
 import { Prisma } from "@prisma/client";
 
+// use database service to register user and if register succesful send user data, token and success message
+// if fail check if the failure is unique constraint then give that message otherwise give message server error with status code
 export const register=async(req:Request,res:Response)=>{
     try{
         const {name,email,password,role}=req.body;

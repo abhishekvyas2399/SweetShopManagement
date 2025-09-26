@@ -1,6 +1,7 @@
 import {Request,Response,NextFunction} from "express"
 import {userRegister} from "../validators/auth.validator"
 
+// safely parse the data by using zod schema imported from auth.validator module
 export const registerValidateMiddleware=(req:Request,res:Response,next:NextFunction)=>{
     const result=userRegister.safeParse(req.body);
     if(!result.success){
@@ -8,5 +9,5 @@ export const registerValidateMiddleware=(req:Request,res:Response,next:NextFunct
         // issues is array and typescript think it can be zero so it give error if not put ?
         return res.status(400).json({message});
     }
-    next();
+    next(); // goto next if pass zod schema validation.
 }

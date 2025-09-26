@@ -2,6 +2,7 @@ import {z} from "zod"
 
 const roleEnum=z.enum(['ADMIN','CUSTOMER']);
 
+// validating all possible cases by using zod validation in one go
 export const userRegister=z.object({
     name:z.string({message:"name is required"}).min(4,{message:"name is required and must be of minimum 4 character"}).max(50),
     email:z.string({message:"invalid email"}).email({message:"invalid email"}),
