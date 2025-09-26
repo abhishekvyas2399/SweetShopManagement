@@ -8,17 +8,21 @@ describe("user registration api", () => {
   const userData = {
     name: "user1",
     email: "user1@example.com",
-    password: "password",
+    password: "PassworD@1",
   };
+
+  let server:any;
 
   // clean db before tests
   beforeAll(async () => {
     await prisma.user.deleteMany();
+    server=app.listen(3000,()=>{});
   });
 
   // disconnect prisma after tests
   afterAll(async () => {
     await prisma.$disconnect();
+    await server.close();
   });
 
   // test1: successful registration
