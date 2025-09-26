@@ -1,5 +1,5 @@
 import {Request,Response,NextFunction} from "express"
-import {userRegister} from "../validators/auth.validator"
+import {userRegister,userLogin} from "../validators/auth.validator"
 
 // safely parse the data by using zod schema imported from auth.validator module
 export const registerValidateMiddleware=(req:Request,res:Response,next:NextFunction)=>{
@@ -10,4 +10,13 @@ export const registerValidateMiddleware=(req:Request,res:Response,next:NextFunct
         return res.status(400).json({message});
     }
     next(); // goto next if pass zod schema validation.
+}
+
+export const loginValidateMiddleware=(req:Request,res:Response,next:NextFunction)=>{
+    const result=userLogin.safeParse(req.body);
+    if(!result.success){
+        const message=result.error.issues[0]?.message;
+        return res.status(400).json({message});
+    }
+    next();
 }

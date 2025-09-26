@@ -1,7 +1,7 @@
-import dotenv from "dotenv"
 import prisma from "../prisma"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
+import {appError} from "../utils/appError"
 
 const JWT_SECRET=process.env.JWT_SECRET as string;
 
@@ -9,6 +9,18 @@ const JWT_SECRET=process.env.JWT_SECRET as string;
 export const registerUserService=async (name:string,email:string,password:string,role:'CUSTOMER')=>{
     const hashedPassword=await bcrypt.hash(password,20);
     const user=await prisma.user.create({data:{name,email,password:hashedPassword,role}});
+    const token=jwt.sign({user:user.name},JWT_SECRET,{expiresIn: "3h"});
+    return {user,token};
+}
+
+// find user from given email , if the user not exist then throw error 
+// but if exist move further and see that do password match if no then throw error
+// but if password match create jwt token and return user , jwt
+export const loginUserService=async (email:string,password:string)=>{
+    const user=await prisma.user.findUnique({where:{email}});
+    if(!user)   throw new appError("invalid credentials",401);
+    const ok=await bcrypt.compare(password,user.password);
+    if(!ok) throw new appError("invalid credentials",401);
     const token=jwt.sign({user:user.name},JWT_SECRET,{expiresIn: "3h"});
     return {user,token};
 }
