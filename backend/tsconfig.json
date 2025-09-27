@@ -1,4 +1,5 @@
 {
+  "include" : ["src/**/*.ts", "src/types/**/*.d.ts"],
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
@@ -7,11 +8,15 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
+
     "module": "CommonJS",
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "verbatimModuleSyntax": false,
     "allowSyntheticDefaultImports": true,
+
+
+    "typeRoots": ["./node_modules/@types", "./src/types"],
   
     "target": "esnext",
     "types": ["jest"],

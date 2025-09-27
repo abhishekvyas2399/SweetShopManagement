@@ -1,6 +1,5 @@
 import {Request,Response} from "express"
 import { registerUserService ,loginUserService} from "../service/auth.service";
-import prisma from "../prisma";
 import { Prisma } from "@prisma/client";
 
 // use database service to register user and if register succesful send user data, token and success message

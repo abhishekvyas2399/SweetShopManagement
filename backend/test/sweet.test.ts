@@ -16,7 +16,7 @@ describe("sweets CRUD API", () => {
 
   const sweetData = {
     name: "Kaju Katli",
-    category: "Dry Fruit",
+    categoryId: 7,
     price: 250,
     description: "Delicious kaju sweet",
   };
@@ -54,7 +54,8 @@ describe("sweets CRUD API", () => {
 
   // test2: get all sweets
   it("should return a list of sweets", async () => {
-    const res = await request(app).get("/api/sweets");
+    const res = await request(app).get("/api/sweets")
+    .set("Authorization", `Bearer ${adminToken}`);
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBeGreaterThan(0);
@@ -63,8 +64,8 @@ describe("sweets CRUD API", () => {
   // test3: search sweets by query params
   it("should return sweets filtered by name, category, or price", async () => {
     const res = await request(app).get(
-      `/api/sweets/search?name=${sweetData.name}&category=${sweetData.category}&price=${sweetData.price}`
-    );
+      `/api/sweets/search?name=${sweetData.name}&category=${sweetData.categoryId}&price=${sweetData.price}`
+    ).set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
@@ -123,7 +124,7 @@ describe("sweets CRUD API", () => {
   // test7: fail update with invalid ID
   it("should return 404 if sweet not found on update", async () => {
     const res = await request(app)
-      .put(`/api/sweets/nonexistent-id`)
+      .put(`/api/sweets/1`)
       .set("Authorization", `Bearer ${adminToken}`)
       .send({ price: 400 });
 
@@ -134,7 +135,7 @@ describe("sweets CRUD API", () => {
   // test8: fail delete with invalid ID
   it("should return 404 if sweet not found on delete", async () => {
     const res = await request(app)
-      .delete(`/api/sweets/nonexistent-id`)
+      .delete(`/api/sweets/1`)
       .set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.status).toBe(404);
