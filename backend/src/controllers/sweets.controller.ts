@@ -114,12 +114,15 @@ export const getFilteredSweet=async (req:Request,res:Response)=>{
     }
 }
 
-export const restockSweet=async (req:Request,res:Response)=>{
+export const restockSweet=async (req:authRequest,res:Response)=>{
     try{
+        const user=req.user;
         const id=Number(req.params.id);
         const {quantity}=req.body;
-        const sweet=await restockSweetService(id,quantity);
-        return res.status(200).json({message:"restocked successfully",sweet});
+        if(!user)   return res.status(401).json({message:"unauthorized"});
+
+        const {sweet,restockLog}=await restockSweetService(id,quantity,user.id);
+        return res.status(200).json({message:"restocked successfully",sweet,restockLog});
     }catch(e:any){
         if(e.name==="appError")
             return res.status(e.statusCode).json({message:e.message});

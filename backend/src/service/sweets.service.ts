@@ -26,19 +26,23 @@ export const getFilteredSweetService=async (filter:{name?:any,price?:number,cate
     return filteredSweet;
 }
 
-export const restockSweetService=async (id:number,quantity:number)=>{
+export const restockSweetService=async (id:number,quantity:number,userId:number)=>{
     // ensure ACID property using transaction
     // here we can't use normal client because it not guarantee ACID property thats why we used tx=(transactional prisma client)
     // tx run all operation on a single connection as one atomic transaction. 
-    const restockedSweet=await prisma.$transaction(async (tx)=>{  // both using tx so atomic
-        const sweet=await tx.sweet.findUnique({where:{id}});
-        if(!sweet) throw new appError("sweet not found...",404);
-        const updatedQuantity=sweet.quantity+quantity;
-        const restockedSweet=await tx.sweet.update({data:{quantity:updatedQuantity},where:{id}});
-        return restockedSweet;
+    const result=await prisma.$transaction(async (tx)=>{  // all using tx so atomic
+        const int32min=-2147483648;
+        const int32max=2147483647; 
+        if(id<int32min || id>int32max) throw new appError("sweet not found...",404); // byme:- handle it by zod later
+        const oldSweet=await tx.sweet.findUnique({where:{id}});
+        if(!oldSweet) throw new appError("sweet not found...",404);
+        const updatedQuantity=oldSweet.quantity+quantity;
+        const sweet=await tx.sweet.update({data:{quantity:updatedQuantity},where:{id}});
+        const restockLog=await tx.restockLog.create({data:{sweetId:id,adminId:userId,quantity}});
+        return {sweet,restockLog};
     });
 
-    return restockedSweet;
+    return result;
 }
 
 export const purchaseSweetService=async (id:number,quantity:number,userId:number)=>{
