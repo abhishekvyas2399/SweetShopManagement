@@ -1,7 +1,7 @@
 import {Router} from "express"
 import {userJwtAuth,isRoleAdminAuth} from "../middlewares/authentication.middleware"
 import {sweetIdValidatorMiddleware,sweetInfoValidatorMiddleware,sweetquantityValidatorMiddleware} from "../middlewares/DataValidation.middleware"
-import {addSweet,updateSweet,deleteSweet,getAllSweets,getFilteredSweet,restockSweet} from "../controllers/sweets.controller"
+import {addSweet,updateSweet,deleteSweet,getAllSweets,getFilteredSweet,restockSweet, purchaseSweet} from "../controllers/sweets.controller"
 
 const router=Router();
 
@@ -20,5 +20,7 @@ router.get("/search",userJwtAuth,getFilteredSweet);
 
 // sweet restock
 router.post("/:id/restock",sweetIdValidatorMiddleware,sweetquantityValidatorMiddleware,userJwtAuth,isRoleAdminAuth,restockSweet);
+// sweet purchase
+router.post("/:id/purchase",sweetIdValidatorMiddleware,sweetquantityValidatorMiddleware,userJwtAuth,purchaseSweet);
 
 export default router;

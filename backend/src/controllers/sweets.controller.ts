@@ -1,6 +1,7 @@
 import { Request,Response } from "express";
-import {addSweetService,updateSweetService,deleteSweetService,getAllSweetService,getFilteredSweetService,restockSweetService} from "../service/sweets.service"
+import {addSweetService,updateSweetService,deleteSweetService,getAllSweetService,getFilteredSweetService,restockSweetService, purchaseSweetService} from "../service/sweets.service"
 import { Prisma } from "@prisma/client";
+import { authRequest } from "../middlewares/authentication.middleware";
 
 export const addSweet=async (req:Request,res:Response)=>{
     try{
@@ -119,6 +120,25 @@ export const restockSweet=async (req:Request,res:Response)=>{
         const {quantity}=req.body;
         const sweet=await restockSweetService(id,quantity);
         return res.status(200).json({message:"restocked successfully",sweet});
+    }catch(e:any){
+        if(e.name==="appError")
+            return res.status(e.statusCode).json({message:e.message});
+        else if(e instanceof Prisma.PrismaClientKnownRequestError && e.code==="P2025")
+            return res.status(404).json({message:"sweet not found..."});
+        else
+            return res.status(500).json({message:"server error..."});
+    }
+}
+
+export const purchaseSweet=async (req:authRequest,res:Response)=>{
+    try{
+        const user=req.user;
+        const id=Number(req.params.id);
+        const {quantity}=req.body;
+        if(!user)   return res.status(401).json({message:"unauthorized"});
+
+        const {purchase,updated}=await purchaseSweetService(id,quantity,user.id);
+        return res.status(201).json({message:"purchase successful...",purchase,updated});
     }catch(e:any){
         if(e.name==="appError")
             return res.status(e.statusCode).json({message:e.message});

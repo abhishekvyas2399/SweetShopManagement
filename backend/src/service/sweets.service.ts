@@ -40,3 +40,25 @@ export const restockSweetService=async (id:number,quantity:number)=>{
 
     return restockedSweet;
 }
+
+export const purchaseSweetService=async (id:number,quantity:number,userId:number)=>{
+    const result=await prisma.$transaction(async (tx)=>{
+        const int32min=-2147483648;
+        const int32max=2147483647; 
+        // bcz we are using int4 in DB whose range is 32bit so conversion of js number which very big to int4 fail & give error
+        // this error has no specific prisma code like "P2025" for update/delete when data not exist
+        // so cant give specific error message to user thats why handle it manually by appError.
+        // byme :- handle it by zod on initial middleware but change error msg to invalid id
+        if(id<int32min || id>int32max) throw new appError("sweet not found...",404); 
+        const sweet=await tx.sweet.findUnique({where:{id}});
+        if(!sweet) throw new appError("sweet not found...",404);
+        if(sweet.quantity === 0)  throw new appError("out of stock",400);
+        if(sweet.quantity < quantity)   throw new appError("insufficient stock",400);
+        const updated=await tx.sweet.update({data:{quantity:sweet.quantity-quantity},where:{id}});
+        const totalPrice=parseFloat(((sweet.price)*quantity).toFixed(2));
+        const purchase=await tx.purchase.create({data:{sweetId:id,userId,quantity,totalPrice}});
+        return {updated,purchase};
+    });
+
+    return result;
+}
