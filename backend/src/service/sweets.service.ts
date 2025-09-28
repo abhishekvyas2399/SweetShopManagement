@@ -1,4 +1,5 @@
 import prisma from "../prisma"
+import { appError } from "../utils/appError";
 
 export const addSweetService=async (name:string,price:number,categoryId:number)=>{
     const sweet=await prisma.sweet.create({data:{name,price,categoryId}});
@@ -23,4 +24,19 @@ export const getAllSweetService=async ()=>{
 export const getFilteredSweetService=async (filter:{name?:any,price?:number,categoryId?:number})=>{
     const filteredSweet=await prisma.sweet.findMany({where:filter,include:{category:true}});
     return filteredSweet;
+}
+
+export const restockSweetService=async (id:number,quantity:number)=>{
+    // ensure ACID property using transaction
+    // here we can't use normal client because it not guarantee ACID property thats why we used tx=(transactional prisma client)
+    // tx run all operation on a single connection as one atomic transaction. 
+    const restockedSweet=await prisma.$transaction(async (tx)=>{  // both using tx so atomic
+        const sweet=await tx.sweet.findUnique({where:{id}});
+        if(!sweet) throw new appError("sweet not found...",404);
+        const updatedQuantity=sweet.quantity+quantity;
+        const restockedSweet=await tx.sweet.update({data:{quantity:updatedQuantity},where:{id}});
+        return restockedSweet;
+    });
+
+    return restockedSweet;
 }

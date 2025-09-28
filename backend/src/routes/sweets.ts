@@ -1,19 +1,24 @@
 import {Router} from "express"
 import {userJwtAuth,isRoleAdminAuth} from "../middlewares/authentication.middleware"
-import {addSweetValidateMiddleware,updateSweetValidateMiddleware,deleteSweetValidateMiddleware} from "../middlewares/DataValidation.middleware"
-import {addSweet,updateSweet,deleteSweet,getAllSweets,getFilteredSweet} from "../controllers/sweets.controller"
+import {sweetIdValidatorMiddleware,sweetInfoValidatorMiddleware,sweetquantityValidatorMiddleware} from "../middlewares/DataValidation.middleware"
+import {addSweet,updateSweet,deleteSweet,getAllSweets,getFilteredSweet,restockSweet} from "../controllers/sweets.controller"
 
 const router=Router();
 
 // add new sweet "here we not add quantity,quantity have seprate route"" (only admin)
-router.post("/",addSweetValidateMiddleware,userJwtAuth,isRoleAdminAuth,addSweet);
+router.post("/",sweetInfoValidatorMiddleware,userJwtAuth,isRoleAdminAuth,addSweet);
 // update a sweet (only admin)
-router.put("/:id",updateSweetValidateMiddleware,userJwtAuth,isRoleAdminAuth,updateSweet); 
+router.put("/:id",sweetIdValidatorMiddleware,userJwtAuth,isRoleAdminAuth,updateSweet); 
 // delete a sweet (only admin)
-router.delete("/:id",deleteSweetValidateMiddleware,userJwtAuth,isRoleAdminAuth,deleteSweet);
+router.delete("/:id",sweetIdValidatorMiddleware,userJwtAuth,isRoleAdminAuth,deleteSweet);
 // see all available sweets
 router.get("/",userJwtAuth,getAllSweets);
 // search a sweet by name , category , price
 router.get("/search",userJwtAuth,getFilteredSweet);
+
+
+
+// sweet restock
+router.post("/:id/restock",sweetIdValidatorMiddleware,sweetquantityValidatorMiddleware,userJwtAuth,isRoleAdminAuth,restockSweet);
 
 export default router;

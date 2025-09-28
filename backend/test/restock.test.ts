@@ -103,7 +103,7 @@ describe("Inventory Restock API", () => {
       .send({ quantity: 3 });
 
     expect(res.status).toBe(403);
-    expect(res.body.message).toMatch(/admin only/i);
+    expect(res.body.message).toMatch(/not authorized/i);
   });
 
   // test5: fail restock with invalid quantity

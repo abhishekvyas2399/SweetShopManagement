@@ -1,7 +1,7 @@
 import {Request,Response,NextFunction} from "express"
 import {userRegister,userLogin} from "../validators/auth.validator"
 import {categoryName,categoryId} from "../validators/category.validator"
-import {SweetIdValidator,SweetInfoValidator} from "../validators/sweet.validator"
+import {sweetIdValidator,sweetInfoValidator,sweetquantityValidator} from "../validators/sweet.validator"
 
 // safely parse the data by using zod schema imported from auth.validator module
 export const registerValidateMiddleware=(req:Request,res:Response,next:NextFunction)=>{
@@ -41,8 +41,8 @@ export const categoryIdValidateMiddleware=(req:Request,res:Response,next:NextFun
     next();
 }
 
-export const addSweetValidateMiddleware=(req:Request,res:Response,next:NextFunction)=>{
-    const result=SweetInfoValidator.safeParse(req.body);
+export const sweetInfoValidatorMiddleware=(req:Request,res:Response,next:NextFunction)=>{
+    const result=sweetInfoValidator.safeParse(req.body);
     if(!result.success){
         const message=result.error.issues[0]?.message;
         return res.status(400).json({message});
@@ -50,8 +50,8 @@ export const addSweetValidateMiddleware=(req:Request,res:Response,next:NextFunct
     next();
 }
 
-export const updateSweetValidateMiddleware=(req:Request,res:Response,next:NextFunction)=>{
-    const result=SweetIdValidator.safeParse(req.params);
+export const sweetIdValidatorMiddleware=(req:Request,res:Response,next:NextFunction)=>{
+    const result=sweetIdValidator.safeParse(req.params);
     if(!result.success){
         const message=result.error.issues[0]?.message;
         return res.status(400).json({message});
@@ -59,8 +59,9 @@ export const updateSweetValidateMiddleware=(req:Request,res:Response,next:NextFu
     next();
 }
 
-export const deleteSweetValidateMiddleware=(req:Request,res:Response,next:NextFunction)=>{
-    const result=SweetIdValidator.safeParse(req.params);
+
+export const sweetquantityValidatorMiddleware=(req:Request,res:Response,next:NextFunction)=>{
+    const result=sweetquantityValidator.safeParse(req.body);
     if(!result.success){
         const message=result.error.issues[0]?.message;
         return res.status(400).json({message});
