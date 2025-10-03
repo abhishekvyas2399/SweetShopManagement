@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchSweets, purchaseSweet } from "../redux/slice/sweetSlice";
+import { fetchSweets, purchaseSweet, searchSweets } from "../redux/slice/sweetSlice";
 import type { ReduxStoreType, ReduxDispatchType } from "../redux/store";
+import { fetchCategory } from "../redux/slice/categorySlice";
 
 export default function UserDashboard() {
   const dispatch = useDispatch<ReduxDispatchType>();
@@ -11,9 +12,16 @@ export default function UserDashboard() {
   // Store quantity for each sweet
   const [quantities, setQuantities] = useState<Record<number, number>>({});
 
+  // search sweet form
+  const [search, setSearch] = useState({ name: "", categoryId: 0, price: 0 });
+  const categorys=useSelector((state:ReduxStoreType)=>state.categorys.items);
+
   useEffect(() => {
-    if (token) dispatch(fetchSweets(token));
-  }, [dispatch, token]);
+    if(token){
+      dispatch(fetchSweets(token));
+      dispatch(fetchCategory(token));
+    }
+  }, [dispatch,token]);
 
   const handleQuantityChange = (id: number, value: string) => {
     const quantity = Math.max(0, Number(value)); // prevent negative values
@@ -28,6 +36,13 @@ export default function UserDashboard() {
     }
   };
 
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    dispatch(searchSweets({query:search,token}));
+  };
+
+
   return (
     <div className="p-6 overflow-x-auto">
       <div className="flex justify-between">
@@ -35,6 +50,22 @@ export default function UserDashboard() {
         <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 h-8 w-19 rounded"
         onClick={()=>{localStorage.removeItem('authorization');location.reload()}}> Logout </button>
       </div>
+
+            {/* Search */}
+      <form onSubmit={handleSearch} className="m-4 space-x-2">
+        <input  type="text"  placeholder="Search Name"  value={search.name || ""}
+        onChange={(e) => setSearch({ ...search, name: e.target.value })}  className="border p-2 rounded"/>
+        {/* <input  type="text"  placeholder="Search Category"  value={search.categoryId || ""}
+        onChange={(e) => setSearch({ ...search, categoryId: Number(e.target.value) })}  className="border p-2 rounded"/> */}
+          <select  value={search.categoryId || ""} onChange={(e) => setSearch({ ...search, categoryId: Number(e.target.value) })} 
+          className="border p-2 rounded m-2">
+            <option value="" >Select Category</option>
+            {categorys.map((cat) => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
+          </select>
+        <input  type="text"  placeholder="Search Price" value={search.price==0 || isNaN(search.price)?"":search.price}
+        onChange={(e) => setSearch({ ...search, price: Number(e.target.value) })}  className="border p-2 rounded"/>
+        <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">Search</button>
+      </form>
 
       {loading ? (
         <p>Loading sweets...</p>
@@ -58,7 +89,7 @@ export default function UserDashboard() {
               return (
                 <tr key={sweet.id}>
                   <td className="border p-2">{sweet.name}</td>
-                  <td className="border p-2">{sweet.categoryId}</td>
+                  <td className="border p-2">{sweet.category.name}</td>
                   <td className="border p-2">{sweet.price}</td>
                   <td className="border p-2">{sweet.quantity}</td>
                   <td className="border p-2">
