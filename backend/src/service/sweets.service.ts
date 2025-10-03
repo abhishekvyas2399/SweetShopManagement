@@ -2,11 +2,11 @@ import prisma from "../prisma"
 import { appError } from "../utils/appError";
 
 export const addSweetService=async (name:string,price:number,categoryId:number)=>{
-    const sweet=await prisma.sweet.create({data:{name,price,categoryId}});
+    const sweet=await prisma.sweet.create({data:{name,price,categoryId},include:{category:true}});
     return sweet;
 }
 export const updateSweetService=async (id:number,dataToUpdate:{name?:string,price?:number,categoryId?:number})=>{
-    const sweet=await prisma.sweet.update({data:dataToUpdate,where:{id}});
+    const sweet=await prisma.sweet.update({data:dataToUpdate,where:{id},include:{category:true}});
     return sweet;
 }
 export const deleteSweetService=async (id:number)=>{
@@ -37,7 +37,7 @@ export const restockSweetService=async (id:number,quantity:number,userId:number)
         const oldSweet=await tx.sweet.findUnique({where:{id}});
         if(!oldSweet) throw new appError("sweet not found...",404);
         const updatedQuantity=oldSweet.quantity+quantity;
-        const sweet=await tx.sweet.update({data:{quantity:updatedQuantity},where:{id}});
+        const sweet=await tx.sweet.update({data:{quantity:updatedQuantity},where:{id},include:{category:true}});
         const restockLog=await tx.restockLog.create({data:{sweetId:id,adminId:userId,quantity}});
         return {sweet,restockLog};
     });
@@ -58,7 +58,7 @@ export const purchaseSweetService=async (id:number,quantity:number,userId:number
         if(!sweet) throw new appError("sweet not found...",404);
         if(sweet.quantity === 0)  throw new appError("out of stock",400);
         if(sweet.quantity < quantity)   throw new appError("insufficient stock",400);
-        const updated=await tx.sweet.update({data:{quantity:sweet.quantity-quantity},where:{id}});
+        const updated=await tx.sweet.update({data:{quantity:sweet.quantity-quantity},where:{id},include:{category:true}});
         const totalPrice=parseFloat(((sweet.price)*quantity).toFixed(2));
         const purchase=await tx.purchase.create({data:{sweetId:id,userId,quantity,totalPrice}});
         return {updated,purchase};

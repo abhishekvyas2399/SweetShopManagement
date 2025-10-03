@@ -15,7 +15,12 @@ describe("user registration api", () => {
 
   // clean db before tests
   beforeAll(async () => {
+    await prisma.purchase.deleteMany();
+    await prisma.restockLog.deleteMany();
+    await prisma.sweet.deleteMany();
+    await prisma.category.deleteMany();
     await prisma.user.deleteMany();
+
     server=app.listen(3000,()=>{});
   });
 

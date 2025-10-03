@@ -48,7 +48,7 @@ Follows **TDD (Test-Driven Development)** with Jest + Supertest.
 |-------------|---------------------------------------|
 |  View Sweets | View available sweets with filtering. |
 |  Search    | Search sweets by name/category/price. |
-|  Purchase  | *(Future feature)*                    |
+|  Purchase  | purchase sweet with correct quantity   |
 
 ---
 ## Tech Stack

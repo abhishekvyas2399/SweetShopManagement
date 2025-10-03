@@ -1,6 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -14,30 +15,38 @@ describe("Inventory Restock API", () => {
     password: "PassworD@1",
   };
 
+  const category={
+    name:"indian sweet"
+  }
+
   const sweetData = {
     name: "Gulab Jamun",
-    categoryId: 7,
+    categoryId: 1,
     price: 100,
-    quantity:10
+    quantity:0
   };
 
   // clean DB before tests
   beforeAll(async () => {
+    await prisma.purchase.deleteMany();
+    await prisma.restockLog.deleteMany();
     await prisma.sweet.deleteMany();
+    await prisma.category.deleteMany();
+    await prisma.user.deleteMany();
 
     server = app.listen(3003, () => {});
 
-    // login admin to get token
-    const loginRes = await request(app).post("/api/auth/login").send({
-      email: adminData.email,
-      password: adminData.password,
-    });
+    const password=await bcrypt.hash(adminData.password,10);
+    await prisma.user.create({data:{name:"user1",password,email:adminData.email,role:"ADMIN"}});
+
+    const loginRes = await request(app).post("/api/auth/login")
+    .send({email: adminData.email,password: adminData.password,});
     adminToken = loginRes.body.token;
 
-    // create sweet directly in DB
-    const sweetRes = await prisma.sweet.create({
-      data: sweetData,
-    });
+    const categoryRes= await prisma.category.create({data:category});
+    sweetData.categoryId=categoryRes.id;
+
+    const sweetRes = await prisma.sweet.create({data:sweetData});
     sweetId = sweetRes.id;
   });
 

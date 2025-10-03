@@ -1,6 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -9,22 +10,32 @@ describe("sweets CRUD API", () => {
   let adminToken: string;
   let sweetId: string;
 
-  const adminData = {
+  const adminData={
     email: "user1@example.com",
     password: "PassworD@1",
   };
 
-  const sweetData = {
+  const category={
+    name:"indian sweet"
+  }
+  const sweetData ={
     name: "Kaju Katli",
-    categoryId: 7,
     price: 250,
-    description: "Delicious kaju sweet",
-  };
+    categoryId:1
+  }
 
   // clean DB before tests
   beforeAll(async () => {
+    await prisma.purchase.deleteMany();
+    await prisma.restockLog.deleteMany();
     await prisma.sweet.deleteMany();
+    await prisma.category.deleteMany();
+    await prisma.user.deleteMany();
+
     server = app.listen(3001, () => {});
+
+    const password=await bcrypt.hash(adminData.password,10);
+    await prisma.user.create({data:{name:"user1",password,email:adminData.email,role:"ADMIN"}});
 
     // login admin to get token
     const loginRes = await request(app).post("/api/auth/login").send({
@@ -32,6 +43,12 @@ describe("sweets CRUD API", () => {
       password: adminData.password,
     });
     adminToken = loginRes.body.token;
+
+    const res = await request(app)
+      .post("/api/category")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(category);
+    sweetData.categoryId=res.body.category.id;
   });
 
   // disconnect prisma and close server after tests

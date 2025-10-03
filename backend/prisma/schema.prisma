@@ -38,8 +38,8 @@ model sweet{
   updatedAt DateTime @updatedAt
   purchase purchase[]
   restockLog restockLog[]
-  categoryId Int?
-  category category? @relation(fields: [categoryId],references: [id])
+  categoryId Int
+  category category @relation(fields: [categoryId],references: [id])
 }
 
 model purchase{

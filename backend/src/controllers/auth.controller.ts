@@ -1,6 +1,7 @@
 import {Request,Response} from "express"
 import { registerUserService ,loginUserService} from "../service/auth.service";
 import { Prisma } from "@prisma/client";
+import { authRequest } from "../middlewares/authentication.middleware";
 
 // use database service to register user and if register succesful send user data, token and success message
 // if fail check if the failure is unique constraint then give that message otherwise give message server error with status code
@@ -34,5 +35,17 @@ export const login=async(req:Request,res:Response)=>{
             return res.status(err.statusCode).json({message:err.message});
         else
             return res.status(500).json({message:"server error..."});
+    }
+}
+
+export const getUserData=async(req:authRequest,res:Response)=>{
+    try{
+        const user=req.user;
+        return res.status(200).json({message:"user verify succesfully...",
+            user:{name:user.name,email:user.email,role:user.role},
+            token:req.headers.authorization?.split(' ')[1]
+        });
+    }catch(err:any){
+        return res.status(401).json({message:"unauthorized..."});
     }
 }

@@ -9,5 +9,4 @@ module.exports = {
     ...tsJestTransformCfg,
   },
   setupFilesAfterEnv: ['./jest.setup.js'],
-  testTimeout: 180000,                       // bcz neon DB free tier take lot more time to respond so timeout big
 };

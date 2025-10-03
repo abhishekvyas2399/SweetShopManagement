@@ -63,10 +63,15 @@ export const deleteSweet=async (req:Request,res:Response)=>{
     try{
         const id=Number(req.params.id);
         const sweet=await deleteSweetService(id);
-        return res.status(200).json({message:"sweet deleted succesfully..."});
-    }catch(e){
+        return res.status(200).json({message:"sweet deleted succesfully...",id});
+    }catch(e:any){
         if(e instanceof Prisma.PrismaClientKnownRequestError && e.code==="P2025")
             return res.status(404).json({message:"not found..."});
+        // we cant identify that its foreign key constraint violation bcz prisma not give its error code so we identify by e.message
+        else if(e.message.includes("violates") && e.message.includes("foreign key constraint")) 
+            return res.status(409).json(
+                {message:"this sweet is purchased/restock by someone so cant delete it otherwise it cause inconsistency..."}
+            );
         else
             return res.status(500).json({message:"server error..."});
     }

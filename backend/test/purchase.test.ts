@@ -7,12 +7,16 @@ const prisma = new PrismaClient();
 describe("Purchase API", () => {
   let server: any;
   let customerToken: string;
-  let sweetId: string;
+  let sweetId: number;
 
   const customerData = {
     email: "customer1@example.com",
     password: "Customer@123",
   };
+
+  const category={
+    name:"indian sweet"
+  }
 
   const sweetData = {
     name: "Rasgulla",
@@ -24,7 +28,9 @@ describe("Purchase API", () => {
   // clean DB before tests
   beforeAll(async () => {
     await prisma.purchase.deleteMany();
+    await prisma.restockLog.deleteMany();
     await prisma.sweet.deleteMany();
+    await prisma.category.deleteMany();
     await prisma.user.deleteMany();
 
     server = app.listen(3002, () => {});
@@ -44,10 +50,9 @@ describe("Purchase API", () => {
     });
     customerToken = loginRes.body.token;
 
-    // add sweet directly to DB (pretend admin did it)
-    const sweetRes = await prisma.sweet.create({
-      data: sweetData,
-    });
+    const categoryRes = await prisma.category.create({data: category});
+    sweetData.categoryId=categoryRes.id;
+    const sweetRes = await prisma.sweet.create({data: sweetData});
     sweetId = sweetRes.id;
   });
 
